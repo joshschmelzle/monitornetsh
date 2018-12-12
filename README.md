@@ -14,7 +14,13 @@ conversion is based on how wlanSignalQuality is calculated from [Wlanapi.h](http
 
 # sample output
 
+## 1 nic
+
 ![](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/quality_to_dbm_simple.png)
+
+## multiple nics
+
+![](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/quality_to_dbm_2x.png_
 
 # license
 

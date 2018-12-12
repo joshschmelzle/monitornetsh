@@ -57,7 +57,7 @@ def start():
     channel = ""
     quality = ""
 
-    for i, line in enumerate(output.splitlines()):
+    for line in output.splitlines():
         paramater = line.split(":", 1)[0].strip()
         try:
             value = line.split(":", 1)[1].strip()

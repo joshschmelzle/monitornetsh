@@ -16,7 +16,7 @@ conversion is based on how wlanSignalQuality is calculated from [Wlanapi.h](http
 
 ## 1 nic
 
-![](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/quality_to_dbm_simple.png)
+![](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/quality_to_dbm.png)
 
 ## multiple nics
 

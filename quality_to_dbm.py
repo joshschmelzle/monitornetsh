@@ -127,7 +127,7 @@ def get_data_from_netsh_output(output):
     channel = ""
     quality = ""
 
-    for i, line in enumerate(output.splitlines()):
+    for line in output.splitlines():
         paramater = line.split(":", 1)[0].strip()
         try:
             value = line.split(":", 1)[1].strip()
@@ -160,7 +160,7 @@ def get_data_from_netsh():
     """
     logger.debug("in <{}>".format(function_name()))
     interfaces = get_data_from_netsh_output(get_netsh_output())
-    
+
     if interfaces:
         print("name, mac, ssid, bssid, channel, quality, dbm")
         logger.info("name, mac, ssid, bssid, channel, quality, dbm")

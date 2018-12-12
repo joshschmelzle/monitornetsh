@@ -6,12 +6,9 @@ Gets signal quality from netsh.exe and converts it to rssi dbm.
 import sys
 import subprocess
 
-command = ['netsh', 'wlan', 'show', 'interface']
-netsh_output = ""
-
 class Interface():
     """
-    netsh interface class
+    netsh interface class to store data
     """
     def __init__(self, name, mac, ssid, bssid, channel, quality, dbm):
         self.name = name
@@ -34,50 +31,64 @@ def convert(quality):
         dbm = (quality / 2) - 100
     return int(dbm)
 
-try:
-    netsh_output = subprocess.check_output(command)
-except subprocess.CalledProcessError as ex:
-    print("error getting netsh output")
-    sys.exit(-1)
-
-interfaces = []
-
-netsh_output = netsh_output.decode("utf-8").lower()
-
-name = ""
-mac = ""
-ssid = ""
-bssid = ""
-channel = ""
-quality = ""
-
-for i, line in enumerate(netsh_output.splitlines()):
-    paramater = line.split(":", 1)[0].strip()
+def get_netsh_output(command):
+    """
+    return output from netsh.exe
+    """
     try:
-        value = line.split(":", 1)[1].strip()
-    except IndexError:
-        continue
-    if "name" in paramater:
-        name = value
-    if "physical" in paramater:
-        mac = value
-    if "state" in paramater:
-        state = value
-        if "disconnect" in state:
-            print("interface {} is not connected".format(name))
-    if paramater == "ssid":
-        ssid = value
-    if "bssid" in paramater:
-        bssid = value
-    if "channel" in line:
-        channel = value
-    if "signal" in line:
-        quality = int(value.replace("%", ""))
-        dbm = convert(quality)
-        interface = Interface(name, mac, ssid, bssid, channel, quality, dbm)
-        interfaces.append(interface)
+        netsh_output = subprocess.check_output(command)
+    except subprocess.CalledProcessError:
+        print("error getting netsh output")
+        sys.exit(-1)
 
-if interfaces:
-    print("name, mac, ssid, bssid, channel, quality, dbm")
-    for i in interfaces:
-        print("{}, {}, {}, {}, {}, {}, {}".format(i.name, i.mac, i.ssid, i.bssid, i.channel, i.quality, i.dbm))
+    return(netsh_output.decode("utf-8").lower())
+
+def start():
+    """
+    main function
+    """
+    output = get_netsh_output(['netsh', 'wlan', 'show', 'interface'])
+
+    interfaces = []
+    name = ""
+    mac = ""
+    ssid = ""
+    bssid = ""
+    channel = ""
+    quality = ""
+
+    for i, line in enumerate(output.splitlines()):
+        paramater = line.split(":", 1)[0].strip()
+        try:
+            value = line.split(":", 1)[1].strip()
+        except IndexError:
+            continue
+        if "name" in paramater:
+            name = value
+        if "physical" in paramater:
+            mac = value
+        if "state" in paramater:
+            state = value
+            if "disconnect" in state:
+                print("interface {} is not connected".format(name))
+        if paramater == "ssid":
+            ssid = value
+        if "bssid" in paramater:
+            bssid = value
+        if "channel" in line:
+            channel = value
+        if "signal" in line:
+            quality = int(value.replace("%", ""))
+            dbm = convert(quality)
+            interfaces.append(Interface(name, mac, ssid, bssid, channel, quality, dbm))
+
+    if interfaces:
+        print("name, mac, ssid, bssid, channel, quality, dbm")
+        for i in interfaces:
+            print("{}, {}, {}, {}, {}, {}, {}".format(i.name, i.mac, i.ssid, i.bssid, i.channel, i.quality, i.dbm))
+
+if __name__ == '__main__':
+    try:
+        start()
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt: stop requested...")

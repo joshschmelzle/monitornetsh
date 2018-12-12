@@ -20,7 +20,7 @@ conversion is based on how wlanSignalQuality is calculated from [Wlanapi.h](http
 
 ## multiple nics
 
-![](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/quality_to_dbm_2x.png_
+![](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/quality_to_dbm_2x.png)
 
 # license
 

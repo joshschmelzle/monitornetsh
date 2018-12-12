@@ -22,7 +22,7 @@ except subprocess.CalledProcessError as ex:
 netsh_output = netsh_output.decode("utf-8").lower()
 for i, line in enumerate(netsh_output.splitlines()):
     if "state" in line:
-        state = line.split(":")[1].strip()
+        state = line.split(":", 1)[1].strip()
         if "disconnect" in state:
             print("not connected")
             sys.exit(0)

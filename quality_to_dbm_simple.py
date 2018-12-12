@@ -8,10 +8,31 @@ import subprocess
 
 command = ['netsh', 'wlan', 'show', 'interface']
 netsh_output = ""
-quality = ""
-dbm = 0
-bssid = ""
-channel = ""
+
+class Interface():
+    """
+    netsh interface class
+    """
+    def __init__(self, name, mac, ssid, bssid, channel, quality, dbm):
+        self.name = name
+        self.mac = mac
+        self.ssid = ssid
+        self.bssid = bssid
+        self.channel = channel
+        self.quality = quality
+        self.dbm = dbm
+
+def convert(quality):
+    """
+    converts quality (percent) to dbm.
+    """
+    if quality <= 0:
+        dbm = -100
+    elif quality >= 100:
+        dbm = -50
+    else:
+        dbm = (quality / 2) - 100
+    return int(dbm)
 
 try:
     netsh_output = subprocess.check_output(command)
@@ -19,27 +40,44 @@ except subprocess.CalledProcessError as ex:
     print("error getting netsh output")
     sys.exit(-1)
 
+interfaces = []
+
 netsh_output = netsh_output.decode("utf-8").lower()
+
+name = ""
+mac = ""
+ssid = ""
+bssid = ""
+channel = ""
+quality = ""
+
 for i, line in enumerate(netsh_output.splitlines()):
-    if "state" in line:
-        state = line.split(":", 1)[1].strip()
+    paramater = line.split(":", 1)[0].strip()
+    try:
+        value = line.split(":", 1)[1].strip()
+    except IndexError:
+        continue
+    if "name" in paramater:
+        name = value
+    if "physical" in paramater:
+        mac = value
+    if "state" in paramater:
+        state = value
         if "disconnect" in state:
-            print("not connected")
-            sys.exit(0)
-    if "bssid" in line:
-        bssid = line.split(":", 1)[1].strip()
+            print("interface {} is not connected".format(name))
+    if paramater == "ssid":
+        ssid = value
+    if "bssid" in paramater:
+        bssid = value
     if "channel" in line:
-        channel = line.split(":", 1)[1].strip()
+        channel = value
     if "signal" in line:
-        quality = int(line.split(":", 1)[1].strip().replace("%", ""))
+        quality = int(value.replace("%", ""))
+        dbm = convert(quality)
+        interface = Interface(name, mac, ssid, bssid, channel, quality, dbm)
+        interfaces.append(interface)
 
-if quality <= 0:
-    dbm = -100
-elif quality >= 100:
-    dbm = -50
-else:
-    dbm = (quality / 2) - 100
-dbm = int(dbm)
-
-print("bssid,channel,quality,dbm")
-print("{},{},{},{}".format(bssid, channel, quality, dbm))
+if interfaces:
+    print("name, mac, ssid, bssid, channel, quality, dbm")
+    for i in interfaces:
+        print("{}, {}, {}, {}, {}, {}, {}".format(i.name, i.mac, i.ssid, i.bssid, i.channel, i.quality, i.dbm))

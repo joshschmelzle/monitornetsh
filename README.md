@@ -6,6 +6,8 @@ convert netsh.exe's signal quality to a rssi value using python
 
 a win32 machine with Python 3 installed
 
+tested with Python 3.6.4 and Windows 10 Enterprise (10.0.16299 N/A Build 16299)
+
 # usage
 
 by default the script will poll netsh.exe every second. use the `--interval` argument to change this. 

@@ -42,7 +42,7 @@ logger.setLevel(logging.INFO)
 if not os.path.exists('log'):
     os.mkdir('log')
 log_handler = logging.handlers.TimedRotatingFileHandler('log/{}.log'.format(os.path.basename(sys.argv[0])), when='M', interval=2)
-log_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s](%(name)s:%(funcName)s:%(lineno)d): %(message)s'))
+log_handler.setFormatter(logging.Formatter('%(asctime)-.19s [%(levelname)s](%(name)s:%(funcName)s:%(lineno)d): %(message)s'))
 log_handler.setLevel(logging.INFO)
 logger.addHandler(log_handler)
 
@@ -198,10 +198,10 @@ def poll():
     """
     logger.debug("in <{}>".format(function_name()))
     interfaces = get_data_from_netsh_output(get_netsh_output())
-
+    now = time.strftime("%H%M%S")
     if interfaces:
         for i in interfaces:
-            print("{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(i.name, i.mac, i.ssid, i.bssid, i.radio, i.auth, i.cipher, i.channel, i.rx, i.tx, i.quality, i.rssi))
+            print("{}:{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(now, i.name, i.mac, i.ssid, i.bssid, i.radio, i.auth, i.cipher, i.channel, i.rx, i.tx, i.quality, i.rssi))
             logger.info("{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(i.name, i.mac, i.ssid, i.bssid, i.radio, i.auth, i.cipher, i.channel, i.rx, i.tx, i.quality, i.rssi))
     
 def setup_loop(args):

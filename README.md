@@ -1,6 +1,6 @@
-# netsh.exe signal quality to rssi
+# Monitor netsh.exe Wi-Fi interfaces
 
-convert netsh.exe's signal quality to a rssi value using python
+Monitor netsh.exe's wlan interfaces and convert signal quality to a RSSI value. 
 
 # requirements
 

@@ -95,7 +95,7 @@ def get_netsh_output():
         netsh_output = subprocess.check_output(['netsh', 'wlan', 'show', 'interface'])
         if args.verbose:
             logger.info("{}".format(netsh_output))
-        return(netsh_output.decode("utf-8").lower())
+        return(netsh_output.decode("utf-8"))
     except subprocess.CalledProcessError as ex:
         print("error getting netsh output")
         logger.info(ex.returncode, ex.output)
@@ -140,52 +140,52 @@ def get_data_from_netsh_output(output):
     quality = ""
 
     for line in output.splitlines():
-        paramater = line.split(":", 1)[0].strip()
+        parameter = line.split(":", 1)[0].strip().lower()
         try:
             value = line.split(":", 1)[1].strip()
         except IndexError:
             continue
-        if "name" in paramater:
+        if "name" in parameter:
             name = value
             continue 
-        if "state" in paramater:
+        if "state" in parameter:
             if value == "disconnected":
                 print("{} state is disconnected".format(name))
                 break
             continue 
-        if "physical" in paramater:
+        if "physical" in parameter:
             mac = value
             continue 
-        if "state" in paramater:
+        if "state" in parameter:
             state = value
-            if "disconnect" in state:
+            if "disconnect" in state.lower():
                 logger.info("interface {} is not connected".format(name))
             continue 
-        if paramater == "ssid":
+        if parameter == "ssid":
             ssid = value
             continue 
-        if "bssid" in paramater:
+        if "bssid" in parameter:
             bssid = value
             continue 
-        if "authentication" in paramater:
+        if "authentication" in parameter:
             auth = value
             continue 
-        if "cipher" in paramater:
+        if "cipher" in parameter:
             cipher = value
             continue 
-        if "radio" in paramater:
+        if "radio" in parameter:
             radio = value
             continue 
-        if "channel" in line:
+        if "channel" in parameter:
             channel = value
             continue 
-        if "receive" in paramater:
+        if "receive" in parameter:
             rx = value
             continue 
-        if "transmit" in paramater:
+        if "transmit" in parameter:
             tx = value
             continue 
-        if "signal" in line:
+        if "signal" in parameter:
             quality = int(value.replace("%", ""))
             dbm = convert_quality_to_dbm(quality)
             ifaces.append(Interface(name, mac, ssid, bssid, auth, cipher, radio, channel, rx, tx, quality, dbm))

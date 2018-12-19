@@ -4,9 +4,9 @@ This script monitor netsh.exe's connected wlan interface, and convert signal qua
 
 # requirements
 
-a win32 machine with Python 3 installed
+a win32 machine with Python 3 installed.
 
-tested with Python 3.6.4 and Windows 10 Enterprise (10.0.16299 N/A Build 16299)
+tested with Python 3.6.4 and Windows 10 Enterprise (10.0.16299 N/A Build 16299).
 
 # usage
 
@@ -39,4 +39,4 @@ conversion for signal quality (percentage) to RSSI (dBm) is based on how wlanSig
 
 # license
 
-project license can be found [here](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/LICENSE)
+project license can be found [here](https://github.com/joshschmelzle/netsh_quality_to_dbm/blob/master/LICENSE).

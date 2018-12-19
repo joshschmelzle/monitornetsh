@@ -3,7 +3,8 @@
 
 """
 Monitors netsh's wlan interfaces, and converts signal quality to RSSI.
-Requires a Windows machine to run.
+
+Tested with Windows 10 build 16299 and Python 3.6.4.
 """
 
 __author__ = "Josh Schmelzle"
@@ -145,9 +146,7 @@ def convert_quality_to_dbm(quality):
 
 
 def get_netsh_output():
-    """
-    gets and returns netsh output from netsh.exe
-    """
+    """gets and returns netsh output from netsh.exe"""
     LOGGER.debug("in <{}>".format(get_function_name()))
     try:
         netsh_output = subprocess.check_output(["netsh", "wlan", "show", "interface"])
@@ -161,9 +160,7 @@ def get_netsh_output():
 
 
 def parse_netsh_output(output):
-    """
-    extract and return data from netsh output
-    """
+    """extract and return data from netsh output"""
     LOGGER.debug("in <{}>".format(get_function_name()))
 
     ifaces = []
@@ -249,9 +246,7 @@ def parse_netsh_output(output):
 
 
 def poll():
-    """
-    handle conversion of Netsh quality to rssi value
-    """
+    """handle conversion of Netsh quality to rssi value"""
     LOGGER.debug("in <{}>".format(get_function_name()))
     interfaces = parse_netsh_output(get_netsh_output())
     now = time.strftime("%Y%m%dt%H%M%S")

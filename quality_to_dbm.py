@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Monitors netsh.exe's wlan show interfaces and converts signal quality to a RSSI value.
+Monitors netsh's wlan interfaces, and converts signal quality to RSSI.
+Requires a Windows machine to run.
 """
 
 __author__ = "Josh Schmelzle"
@@ -16,12 +17,27 @@ import os
 import sys
 import subprocess
 import time
+import traceback
 
-class Interface():
-    """
-    netsh interface class to store data
-    """
-    def __init__(self, name, mac, ssid, bssid, radio, auth, cipher, channel, rx, tx, quality, rssi):
+
+class Interface:
+    """netsh interface class to store data"""
+
+    def __init__(
+        self,
+        name,
+        mac,
+        ssid,
+        bssid,
+        radio,
+        auth,
+        cipher,
+        channel,
+        receive,
+        transmit,
+        quality,
+        rssi,
+    ):
         self.name = name
         self.mac = mac
         self.ssid = ssid
@@ -30,76 +46,94 @@ class Interface():
         self.auth = auth
         self.cipher = cipher
         self.channel = channel
-        self.rx = rx
-        self.tx = tx
+        self.receive = receive
+        self.transmit = transmit
         self.quality = quality
         self.rssi = rssi
 
-logger = logging.getLogger('quality-to-rssi')
-logger.setLevel(logging.INFO)
+
+LOGGER = logging.getLogger("monitor_wlan")
+LOGGER.setLevel(logging.INFO)
 
 # write to rotating log files
-if not os.path.exists('log'):
-    os.mkdir('log')
-log_handler = logging.handlers.TimedRotatingFileHandler('log/{}.log'.format(os.path.basename(sys.argv[0])), when='M', interval=2)
-log_handler.setFormatter(logging.Formatter('%(asctime)-.19s [%(levelname)s](%(funcName)s:%(lineno)d): %(message)s'))
-log_handler.setLevel(logging.INFO)
-logger.addHandler(log_handler)
+if not os.path.exists("log"):
+    os.mkdir("log")
+LOG_DIR = os.path.join(os.getcwd(), "log")
+LOG_FILE = "{}.log".format(os.path.basename(sys.argv[0]))
+LOG_HANDLER = logging.handlers.TimedRotatingFileHandler(
+    os.path.join(LOG_DIR, LOG_FILE), when="M", interval=2
+)
+LOG_HANDLER.setFormatter(
+    logging.Formatter(
+        "%(asctime)-.19s [%(levelname)s](%(funcName)s:%(lineno)d): %(message)s"
+    )
+)
+LOG_HANDLER.setLevel(logging.INFO)
+LOGGER.addHandler(LOG_HANDLER)
 
 # log to console at a level determined by --verbose flag
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO) # set later by set_log_level_from_verbose() in interactive sessions
-console_handler.setFormatter(logging.Formatter('[%(levelname)s](%(name)s): %(message)s'))
-logger.addHandler(console_handler)
+CONSOLE_HANDLER = logging.StreamHandler()
+CONSOLE_HANDLER.setLevel(
+    logging.INFO
+)  # set later by set_log_level_from_verbose() in interactive sessions
+CONSOLE_HANDLER.setFormatter(
+    logging.Formatter("[%(levelname)s](%(name)s): %(message)s")
+)
+LOGGER.addHandler(CONSOLE_HANDLER)
 
-parser = argparse.ArgumentParser(
+PARSER = argparse.ArgumentParser(
     description="Converts netsh.exe's Wi-Fi signal quality to RSSI.",
     epilog="Made with Python by {}".format(__author__),
-    fromfile_prefix_chars='@'
-    )
+    fromfile_prefix_chars="@",
+)
 
-parser.add_argument('command', nargs="?", default="convert", help="command to execute", choices=['convert'])
-parser.add_argument('-V', '--version', action="version", version="%(prog)s {}".format(__version__))
-parser.add_argument('-v', '--verbose', action="count", help="verbosity level. repeat up to three times.")
-parser.add_argument('-c', '--convert', action="store_true", help="returns dbm based on Netsh quality")
-parser.add_argument('-i', '--interval', help="polling interval for netsh.exe in seconds. default is 1.")
+PARSER.add_argument(
+    "command",
+    nargs="?",
+    default="convert",
+    help="command to execute",
+    choices=["convert"],
+)
+PARSER.add_argument(
+    "-V", "--version", action="version", version="%(prog)s {}".format(__version__)
+)
+PARSER.add_argument(
+    "-v", "--verbose", action="count", help="verbosity level. repeat up to three times."
+)
+PARSER.add_argument(
+    "-c", "--convert", action="store_true", help="returns dbm based on Netsh quality"
+)
+PARSER.add_argument(
+    "-i", "--interval", help="polling interval for netsh.exe in seconds. default is 1."
+)
+
 
 def set_log_level_from_verbose(args):
-    """
-    sets the log level
-    """
+    """set the log level"""
     if not args.verbose:
-        console_handler.setLevel('ERROR')
+        CONSOLE_HANDLER.setLevel("ERROR")
     elif args.verbose == 1:
-        console_handler.setLevel('WARNING')
+        CONSOLE_HANDLER.setLevel("WARNING")
     elif args.verbose == 2:
-        console_handler.setLevel('INFO')
+        CONSOLE_HANDLER.setLevel("INFO")
     elif args.verbose >= 3:
-        console_handler.setLevel('DEBUG')
+        CONSOLE_HANDLER.setLevel("DEBUG")
     else:
-        logger.critical("UNKNOWN NEGATIVE COUNT")
+        LOGGER.critical("UNKNOWN NEGATIVE COUNT")
 
-def function_name():
-    """
-    returns the calling functions name.
-    """
-    import traceback
+
+def get_function_name():
+    """returns the calling function's name."""
     return traceback.extract_stack(None, 2)[0][2]
+
 
 def convert_quality_to_dbm(quality):
     """ converts quality (percent) to dbm.
 
-    A percentage value that represents the signal quality of the netpoll.
-    WLAN_SIGNAL_QUALITY is of type ULONG.
-    This member contains a value between 0 and 100.
-    A value of 0 implies an actual dbm signal strength of -100 dbm.
-    A value of 100 implies an actual dbm signal strength of -50 dbm.
-    You can calculate the dbm signal strength value for wlanSignalQuality values between 1 and 99 using linear interpolation.
-    https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/ns-wlanapi-_wlan_association_attributes
-
     conversion between quality (percentage) and dBm is as follows:
     `quality = 2 * (dbm + 100) where dBm: [-100 to -50]`
     `dbm = (quality / 2) - 100 where quality: [0 to 100]`
+    https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/ns-wlanapi-_wlan_association_attributes
     """
     if quality <= 0:
         dbm = -100
@@ -109,26 +143,28 @@ def convert_quality_to_dbm(quality):
         dbm = (quality / 2) - 100
     return int(dbm)
 
+
 def get_netsh_output():
     """
     gets and returns netsh output from netsh.exe
     """
-    logger.debug("in <{}>".format(function_name()))
+    LOGGER.debug("in <{}>".format(get_function_name()))
     try:
-        netsh_output = subprocess.check_output(['netsh', 'wlan', 'show', 'interface'])
+        netsh_output = subprocess.check_output(["netsh", "wlan", "show", "interface"])
         if args.verbose:
-            logger.info("{}".format(netsh_output))
+            LOGGER.info("{}".format(netsh_output))
         return netsh_output.decode("utf-8")
     except subprocess.CalledProcessError as ex:
         print("error getting netsh output")
-        logger.info(ex.returncode, ex.output)
+        LOGGER.info(ex.returncode, ex.output)
         sys.exit(-1)
+
 
 def parse_netsh_output(output):
     """
     extract and return data from netsh output
     """
-    logger.debug("in <{}>".format(function_name()))
+    LOGGER.debug("in <{}>".format(get_function_name()))
 
     ifaces = []
     name = ""
@@ -139,8 +175,8 @@ def parse_netsh_output(output):
     auth = ""
     cipher = ""
     channel = ""
-    rx = ""
-    tx = ""
+    receive = ""
+    transmit = ""
     quality = ""
 
     for line in output.splitlines():
@@ -163,7 +199,7 @@ def parse_netsh_output(output):
         if "state" in parameter:
             state = value
             if "disconnect" in state.lower():
-                logger.info("interface {} is not connected".format(name))
+                LOGGER.info("interface {} is not connected".format(name))
             continue
         if parameter == "ssid":
             ssid = value
@@ -184,60 +220,113 @@ def parse_netsh_output(output):
             channel = value
             continue
         if "receive" in parameter:
-            rx = value
+            receive = value
             continue
         if "transmit" in parameter:
-            tx = value
+            transmit = value
             continue
         if "signal" in parameter:
             quality = int(value.replace("%", ""))
             dbm = convert_quality_to_dbm(quality)
-            ifaces.append(Interface(name, mac, ssid, bssid, auth, cipher, radio, channel, rx, tx, quality, dbm))
+            ifaces.append(
+                Interface(
+                    name,
+                    mac,
+                    ssid,
+                    bssid,
+                    auth,
+                    cipher,
+                    radio,
+                    channel,
+                    receive,
+                    transmit,
+                    quality,
+                    dbm,
+                )
+            )
 
     return ifaces
+
 
 def poll():
     """
     handle conversion of Netsh quality to rssi value
     """
-    logger.debug("in <{}>".format(function_name()))
+    LOGGER.debug("in <{}>".format(get_function_name()))
     interfaces = parse_netsh_output(get_netsh_output())
     now = time.strftime("%Y%m%dt%H%M%S")
     if interfaces:
-        for i in interfaces:
-            print("[{}]:{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(now, i.name, i.mac, i.ssid, i.bssid, i.radio, i.auth, i.cipher, i.channel, i.rx, i.tx, i.quality, i.rssi))
-            logger.info("{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(i.name, i.mac, i.ssid, i.bssid, i.radio, i.auth, i.cipher, i.channel, i.rx, i.tx, i.quality, i.rssi))
+        for interface in interfaces:
+            print(
+                "[{}]:{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(
+                    now,
+                    interface.name,
+                    interface.mac,
+                    interface.ssid,
+                    interface.bssid,
+                    interface.radio,
+                    interface.auth,
+                    interface.cipher,
+                    interface.channel,
+                    interface.receive,
+                    interface.transmit,
+                    interface.quality,
+                    interface.rssi,
+                )
+            )
+            LOGGER.info(
+                "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format(
+                    interface.name,
+                    interface.mac,
+                    interface.ssid,
+                    interface.bssid,
+                    interface.radio,
+                    interface.auth,
+                    interface.cipher,
+                    interface.channel,
+                    interface.receive,
+                    interface.transmit,
+                    interface.quality,
+                    interface.rssi,
+                )
+            )
 
-def setup(args):
+
+def main(args):
     """
     sets up a scheduler
     """
-    logger.debug("in <{}>".format(function_name()))
+    LOGGER.debug("in <{}>".format(get_function_name()))
     if args.interval is None:
         interval = 1
     else:
         interval = int(args.interval)
 
     print("netsh.exe polling interval: {}".format(interval))
-    logger.info("netsh.exe polling interval: {}".format(interval))
-    print("interface name, mac, ssid, bssid, radio, auth, cipher, channel, rx, tx, quality, rssi")
-    logger.info("interface name, mac, ssid, bssid, radio, auth, cipher, channel, rx, tx, quality, rssi")
+    LOGGER.info("netsh.exe polling interval: {}".format(interval))
+    print(
+        "interface name, mac, ssid, bssid, radio, auth, cipher, channel, receive, transmit, quality, rssi"
+    )
+    LOGGER.info(
+        "interface name, mac, ssid, bssid, radio, auth, cipher, channel, receive, transmit, quality, rssi"
+    )
     starttime = time.time()
     while True:
         poll()
         time.sleep(interval - ((time.time() - starttime) % interval))
 
-if __name__ == '__main__':
-    try:
-        args = parser.parse_args()
-        set_log_level_from_verbose(args)
-        logger.info("{} {}".format(os.path.basename(sys.argv[0]), __version__))
 
-        if args.command == 'convert':
-            setup(args)
+if __name__ == "__main__":
+    try:
+        args = PARSER.parse_args()
+        set_log_level_from_verbose(args)
+        LOGGER.info("{} {}".format(os.path.basename(sys.argv[0]), __version__))
+
+        if args.command == "convert":
+            main(args)
         else:
-            logger.error("fail: {}".format(args.command))
+            LOGGER.error("fail: {}".format(args.command))
     except KeyboardInterrupt:
-        logger.critical("Stop requested by user...")
+        LOGGER.critical("Stop requested by user...")
         sys.exit(-1)
     sys.exit(0)

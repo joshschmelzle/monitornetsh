@@ -1,4 +1,4 @@
-# Monitor netsh.exe Wi-Fi interfaces
+# monitornetsh.py
 
 This script monitor netsh.exe's connected wlan interface, and convert signal quality to a RSSI value. 
 

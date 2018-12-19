@@ -2,6 +2,14 @@
 
 This script monitor netsh.exe's connected wlan interface, and convert signal quality to a RSSI value. 
 
+# caveats/known issues
+
+this script relies on the data found in the output of `netsh wlan show interfaces` and does not scan for new wireless networks. thus this script does not trigger an update to the signal quality data as it monitors netsh output.
+
+additionally signal quality (percentage) found in the netsh output is a quality metric. it does not represent rssi value. this script uses linear interpolation to convert quality to "RSSI".
+
+if you're looking for a value reported by the driver (such as the wlanapi), this script will not provide that.
+
 # requirements
 
 a win32 machine with Python 3 installed.

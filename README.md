@@ -1,6 +1,6 @@
 # Monitor netsh.exe Wi-Fi interfaces
 
-Monitor netsh.exe's wlan interfaces and convert signal quality to a RSSI value. 
+This script monitor netsh.exe's connected wlan interface, and convert signal quality to a RSSI value. 
 
 # requirements
 
@@ -12,7 +12,7 @@ tested with Python 3.6.4 and Windows 10 Enterprise (10.0.16299 N/A Build 16299)
 
 by default the script will poll netsh.exe every second. use the `--interval` argument to change this. 
 
-script will create rotating logs in a `log/` folder
+script will create subfolder called `log` where you will find rotating log files.
 
 # sample output
 

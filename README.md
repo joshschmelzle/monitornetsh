@@ -17,7 +17,7 @@ script will create subfolder called `log` where you will find rotating log files
 # sample output
 
 ```
->monitornetsh.py.py
+>monitornetsh.py
 netsh.exe polling interval: 1
 interface name, mac, ssid, bssid, radio, auth, cipher, channel, receive, transmit, quality, rssi
 [20181217t085334]:Internal WLAN NIC, 28:c6:3f:XX:XX:XX, eap, f0:5c:19:XX:XX:XX, WPA2-Enterprise, CCMP, 802.11n, 157, 300, 300, 99, -50

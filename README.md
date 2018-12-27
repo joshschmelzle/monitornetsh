@@ -38,7 +38,7 @@ you may be looking for a RSSI value reported by the driver such as available fro
 
 # requirements
 
-a win32 machine with Python v3.0+ installed.
+a microsoft windows machine with Python v3.0+ installed.
 
 tested with Python 3.6.4 and Windows 10 Enterprise (10.0.16299 N/A Build 16299).
 

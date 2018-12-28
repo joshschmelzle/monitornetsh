@@ -34,7 +34,7 @@ else
 
 after reviewing the code above, you can see that this script cannot calculate RSSI better than -50. this may not be ideal depending on your needs.
 
-you may be looking for a RSSI value reported by the driver such as available from the [wlanapi](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/)). this script does not provide that.
+you may be looking for a RSSI value reported by the driver such as available from the [wlanapi](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/). this script does not provide that.
 
 # requirements
 

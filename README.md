@@ -11,7 +11,7 @@ alpha
 1. output does not update frequently
     > this script completely relies on the output of `netsh wlan show interfaces`, and does not trigger a scan which would result in a data refresh. information may be delayed. signal quality and calculated RSSI will be delayed.
 
-2. rssi issn't greater than -50
+2. rssi never reports greater than -50 (even if you are on top of the AP)
     > the signal quality metric found in the output is a qualitative metric. this script uses linear interpolation to convert signal quality to RSSI. the RSSI reported is a calculated metric, not a metric from the WLAN NIC driver.
 
 ## conversion formula

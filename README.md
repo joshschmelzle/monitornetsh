@@ -1,6 +1,6 @@
 # monitornetsh
 
-this script monitors netsh.exe's `netsh wlan show interfaces` to show connected WLAN information including the conversion of signal quality to an estimated Received Signal Strength Indicator (RSSI) value. 
+monitornetsh.py monitors netsh.exe's `netsh wlan show interfaces` output to show connected WLAN information. It includes the conversion of signal quality to an estimated Received Signal Strength Indicator (RSSI) value. 
 
 # status
 
@@ -8,11 +8,11 @@ alpha
 
 # known issues
 
-this script relies on the data found in the output of `netsh wlan show interfaces`, and does not trigger a data refresh as it polls `netsh.exe`. this means that the signal quality and RSSI values are not frequently refreshed.
+1. output does not update frequently
+    > this script completely relies on the output of `netsh wlan show interfaces`, and does not trigger a scan which would result in a data refresh. information may be delayed. signal quality and calculated RSSI will be delayed.
 
-it's important to note that the signal quality found in the output of `netsh.exe` is a qualitative metric. 
-
-this script uses linear interpolation to convert signal quality to RSSI. this means the RSSI reported by this script is not from the WLAN NIC driver.
+2. rssi issn't greater than -50
+    > the signal quality metric found in the output is a qualitative metric. this script uses linear interpolation to convert signal quality to RSSI. the RSSI reported is a calculated metric, not a metric from the WLAN NIC driver.
 
 ## conversion formula
 
@@ -67,8 +67,8 @@ interface name, mac, ssid, bssid, radio, auth, cipher, channel, receive, transmi
 
 # credits
 
-- [this stackoverflow answer](https://stackoverflow.com/questions/15797920/how-to-convert-wifi-signal-strength-from-quality-percent-to-rssi-dbm)
-- [microsoft's wlanapi](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/)
+- [this stackoverflow answer](https://stackoverflow.com/questions/15797920/how-to-convert-wifi-signal-strength-from-quality-percent-to-rssi-dbm) 
+- [microsoft's wlanapi](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/) 
 
 # license
 

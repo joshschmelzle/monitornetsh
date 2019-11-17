@@ -1,6 +1,6 @@
-# monitornetsh
+# monitornetsh (experimental, i do not recommend to use this)
 
-monitornetsh.py monitors netsh.exe's `netsh wlan show interfaces` output to show connected WLAN information. It includes the conversion of signal quality to an estimated Received Signal Strength Indicator (RSSI) value. 
+monitornetsh.py monitors netsh.exe's `netsh wlan show interfaces` output to show connected WLAN information. It includes the conversion of signal quality to an **estimated** Received Signal Strength Indicator (RSSI) value. 
 
 # status
 

@@ -4,7 +4,7 @@ monitornetsh.py monitors netsh.exe's `netsh wlan show interfaces` output to show
 
 # status
 
-alpha
+alpha, garbage
 
 # known issues
 

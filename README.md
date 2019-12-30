@@ -4,27 +4,29 @@ monitornetsh.py monitors netsh.exe's `netsh wlan show interfaces` output to show
 
 # status
 
-alpha, garbage
+abandoned
 
 # known issues
 
-1. netsh output is based on cached results
-    - this script completely relies on the output of `netsh wlan show interfaces` which relies on cached results.
+1. this script scrapes `netsh`
+    - this script completely relies on the output of `netsh wlan show interfaces`.
 
-2. netsh does not force a scan or a refresh of results
-    - this means signal quality and calculated RSSI will be delayed.
-    - you can manually force a refresh of the results by clicking on the Wi-Fi network icon in the toolbar.
+2. `netsh` does not force a scan or a refresh of results
+    - `netsh wlan ...` relies on cached scan results and does not trigger scans.
+    - this means signal quality and calculated RSSI will be delayed until some event triggers a scan.
+        + for example, you can manually force a refresh of scan results by clicking on the Wi-Fi network icon in the toolbar.
 
-3. rssi never reports greater than -50 (even if you are on top of the AP)
-    - the signal quality metric found in the output is a qualitative metric. this script uses linear interpolation to convert signal quality to RSSI. this means the RSSI reported is a calculated metric, not a metric from the WLAN NIC driver.
+3. rssi calculated in this way will never be greater than -50
+    - the signal quality metric found in the output is a qualitative metric. 
+    - this script uses linear interpolation to convert signal quality to RSSI, thus arbitrary metric.
 
 ## conversion formula
 
-conversion for signal quality (percentage) to RSSI (dBm) is based on how `wlanSignalQuality` is calculated from [wlanapi.h](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/ns-wlanapi-_wlan_association_attributes).
+with that said, the conversion for signal quality (percentage) to RSSI (dBm) is based on how `wlanSignalQuality` is calculated from [wlanapi.h](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/ns-wlanapi-_wlan_association_attributes).
 
 > A percentage value that represents the signal quality of the network. `WLAN_SIGNAL_QUALITY` is of type ULONG. This member contains a value between 0 and 100. A value of 0 implies an actual RSSI signal strength of -100 dbm. A value of 100 implies an actual RSSI signal strength of -50 dbm. You can calculate the RSSI signal strength value for wlanSignalQuality values between 1 and 99 using linear interpolation.
 
-pseudo code for how this script calculates RSSI from signal quality:
+here is the pseudo code for how this script calculates RSSI from signal quality:
 
 ```
 // signal quality to RSSI
@@ -36,9 +38,11 @@ else
   rssi = (quality / 2) - 100;
 ```
 
-after reviewing the code above, you can see that this script cannot calculate RSSI better than -50. this may not be ideal depending on your needs.
+this pseudo code shows this script cannot calculate RSSI better than -50. for this reason, and the known issues, this script is likely not what you want to use. 
 
-you may be looking for a RSSI value reported by the driver such as available from the [wlanapi](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/). this script does not provide that.
+you may be looking for a RSSI value reported by the driver such as available from the [wlanapi](https://docs.microsoft.com/en-us/windows/desktop/api/wlanapi/).
+
+if you are after the RSSI value reported by the driver, consider using [WinFi](http://www.helge-keck.com/) by [Helge Keck](https://twitter.com/HelgeKeck).
 
 # requirements
 

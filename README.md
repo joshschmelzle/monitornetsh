@@ -18,7 +18,7 @@ abandoned
 
 3. rssi calculated in this way will never be greater than -50
     - the signal quality metric found in the output is a qualitative metric. 
-    - this script uses linear interpolation to convert signal quality to RSSI, thus arbitrary metric.
+    - this script uses linear interpolation to convert signal quality to RSSI, thus an arbitrary metric.
 
 ## conversion formula
 

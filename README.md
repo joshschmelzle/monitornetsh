@@ -67,11 +67,11 @@ interface name, mac, ssid, bssid, radio, auth, cipher, channel, receive, transmi
 
 ## 1 nic
 
-![](https://github.com/joshschmelzle/netsh.exe_signal-quality_to_rssi/blob/master/quality-to-rssi-multiple-nic.png)
+![](quality-to-rssi-multiple-nic.png)
 
 ## multiple nics (experimental)
 
-![](https://github.com/joshschmelzle/netsh.exe_signal-quality_to_rssi/blob/master/quality-to-rssi-1-nic.png)
+![](quality-to-rssi-1-nic.png)
 
 # credits
 
